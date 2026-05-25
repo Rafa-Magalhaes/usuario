@@ -28,12 +28,20 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/usuarios", "/usuarios/login").permitAll()   // Liberando tudo que começa com /usuario
+                        // Rotas Públicas
+                        .requestMatchers(HttpMethod.POST, "/usuarios", "/usuarios/login").permitAll()
+
+                        // Rotas Protegidas (exigem token JWT)
+                        .requestMatchers(HttpMethod.GET, "/usuarios").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/usuarios/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                );
+                )
+                .addFilterBefore(new JwtRequestFilter(jwtUtil, userDetailsService),
+                        UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

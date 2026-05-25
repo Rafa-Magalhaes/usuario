@@ -23,18 +23,23 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain chain)
             throws ServletException, IOException {
 
         String requestURI = request.getRequestURI();
 
-        // Ignora o filtro para rotas públicas (cadastro e login)
-        if (requestURI.equals("/usuario") || requestURI.equals("/usuario/login")) {
+        // ==================== ROTAS PÚBLICAS ====================
+        // Não aplica filtro JWT nessas rotas
+        if (requestURI.equals("/usuarios") && "POST".equals(request.getMethod()) ||
+                requestURI.equals("/usuarios/login")) {
+
             chain.doFilter(request, response);
             return;
         }
 
-        // Processa o token JWT apenas para as demais rotas
+        // ==================== ROTAS PROTEGIDAS ====================
         final String authorizationHeader = request.getHeader("Authorization");
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
