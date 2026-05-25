@@ -3,8 +3,10 @@ package com.rafael.usuario.infrastructure.business;
 import com.rafael.usuario.infrastructure.business.converter.UsuarioConverter;
 import com.rafael.usuario.infrastructure.business.dto.UsuarioDTO;
 import com.rafael.usuario.infrastructure.business.dto.UsuarioResponseDTO;
+import com.rafael.usuario.infrastructure.controller.UsuarioController;
 import com.rafael.usuario.infrastructure.entity.Usuario;
 import com.rafael.usuario.infrastructure.exceptions.ConflictException;
+import com.rafael.usuario.infrastructure.exceptions.ResourceNotFoundException;
 import com.rafael.usuario.infrastructure.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,5 +40,22 @@ public class UsuarioService {
 
         // Retorna ResponseDTO (sem senha)
         return usuarioConverter.toResponseDTO(usuarioSalvo);
+    }
+
+    // ==================== BUSCAR POR EMAIL ====================
+    public UsuarioResponseDTO buscarUsuarioPorEmail(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o email: " + email));
+
+        return usuarioConverter.toResponseDTO(usuario);
+    }
+
+    // ==================== DELETAR POR EMAIL ====================
+    @Transactional
+    public void deletarUsuarioPorEmail(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o email: " + email));
+
+        usuarioRepository.delete(usuario);
     }
 }
