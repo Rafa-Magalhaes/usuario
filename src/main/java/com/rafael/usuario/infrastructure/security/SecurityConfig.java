@@ -28,14 +28,12 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/usuario", "/usuario/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/usuarios", "/usuarios/login").permitAll()   // Liberando tudo que começa com /usuario
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .addFilterBefore(new JwtRequestFilter(jwtUtil, userDetailsService),
-                        UsernamePasswordAuthenticationFilter.class);
+                );
 
         return http.build();
     }
