@@ -58,4 +58,18 @@ public class UsuarioController {
         usuarioService.deletarUsuarioPorEmail(email);
         return ResponseEntity.noContent().build();   // Melhor que .ok().build()
     }
+
+    // ... seus endpoints existentes (POST, GET, DELETE, LOGIN)
+
+    /**
+     * Atualiza dados do próprio usuário (nome, email e/ou senha)
+     * Segurança: usuário só pode alterar os próprios dados (via Token JWT)
+     */
+    @PutMapping("/me")
+    public ResponseEntity<UsuarioResponseDTO> atualizarMe(
+            @Valid @RequestBody infrastructure.business.dto.UsuarioUpdateDTO dto) {
+
+        UsuarioResponseDTO response = usuarioService.updateMe(dto);
+        return ResponseEntity.ok(response);
+    }
 }

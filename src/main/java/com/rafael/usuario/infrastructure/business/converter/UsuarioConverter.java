@@ -1,13 +1,16 @@
 package com.rafael.usuario.infrastructure.business.converter;
 
+import infrastructure.business.dto.UsuarioUpdateDTO;
+import com.rafael.usuario.infrastructure.entity.Usuario;
+import org.springframework.stereotype.Component;
 import com.rafael.usuario.infrastructure.business.dto.EnderecoDTO;
 import com.rafael.usuario.infrastructure.business.dto.TelefoneDTO;
 import com.rafael.usuario.infrastructure.business.dto.UsuarioDTO;
 import com.rafael.usuario.infrastructure.business.dto.UsuarioResponseDTO;
 import com.rafael.usuario.infrastructure.entity.Enderecos;
 import com.rafael.usuario.infrastructure.entity.Telefones;
-import com.rafael.usuario.infrastructure.entity.Usuario;
-import org.springframework.stereotype.Component;
+
+
 
 import java.util.List;
 
@@ -90,4 +93,20 @@ public class UsuarioConverter {
     private TelefoneDTO toTelefoneDTO(Telefones entity) {
         return new TelefoneDTO(entity.getDdd(), entity.getNumero());
     }
+
+        // ... seus métodos existentes (toEntity, toResponseDTO, etc.)
+
+        /**
+         * Aplica atualização parcial no usuário (merge)
+         */
+        public void updateEntityFromDTO(Usuario usuario, UsuarioUpdateDTO dto) {
+            if (dto.getNome() != null) {
+                usuario.setNome(dto.getNome());
+            }
+            if (dto.getEmail() != null) {
+                usuario.setEmail(dto.getEmail());
+            }
+            // Senha NUNCA é alterada aqui (fica no Service por causa do BCrypt)
+        }
+
 }

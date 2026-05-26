@@ -9,6 +9,7 @@ import com.rafael.usuario.infrastructure.exceptions.ConflictException;
 import com.rafael.usuario.infrastructure.exceptions.ResourceNotFoundException;
 import com.rafael.usuario.infrastructure.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,5 +58,32 @@ public class UsuarioService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o email: " + email));
 
         usuarioRepository.delete(usuario);
+    }
+
+    @Transactional
+    public UsuarioResponseDTO updateMe(infrastructure.business.dto.UsuarioUpdateDTO dto) {
+        // Obtém o email do usuário autenticado via JWT
+        String emailAtual = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Usuario usuario = usuarioRepository.findByEmail(emailAtual)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+
+        // Verifica se o email está sendo alterado e se já existe
+        if (dto.getEmail() != null && !dto.getEmail().equals(usuario.getEmail())) {
+            if (usuarioRepository.existsByEmail(dto.getEmail())) {
+                throw new ConflictException("Já existe um usuário cadastrado com este email: " + dto.getEmail());
+            }
+        }
+
+        // Aplica as atualizações parciais
+        usuarioConverter.updateEntityFromDTO(usuario, dto);
+
+        // Criptografa senha somente se foi enviada
+        if (dto.getSenha() != null && !dto.getSenha().isBlank()) {
+            usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
+        }
+
+        Usuario usuarioAtualizado = usuarioRepository.save(usuario);
+        return usuarioConverter.toResponseDTO(usuarioAtualizado);
     }
 }
