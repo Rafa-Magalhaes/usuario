@@ -1,8 +1,14 @@
 package com.rafael.usuario.infrastructure.controller;
 
+import com.rafael.usuario.infrastructure.business.UsuarioService;
+import com.rafael.usuario.infrastructure.business.dto.EnderecoDTO;
+import com.rafael.usuario.infrastructure.business.dto.EnderecoUpdateDTO;
+import com.rafael.usuario.infrastructure.business.dto.SenhaUpdateDTO;
+import com.rafael.usuario.infrastructure.business.dto.TelefoneDTO;
+import com.rafael.usuario.infrastructure.business.dto.TelefoneUpdateDTO;
 import com.rafael.usuario.infrastructure.business.dto.UsuarioDTO;
 import com.rafael.usuario.infrastructure.business.dto.UsuarioResponseDTO;
-import com.rafael.usuario.infrastructure.business.UsuarioService;
+import com.rafael.usuario.infrastructure.business.dto.UsuarioUpdateDTO;
 import com.rafael.usuario.infrastructure.security.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +62,44 @@ public class UsuarioController {
     @DeleteMapping("/{email}")
     public ResponseEntity<Void> deletarUsuarioPorEmail(@PathVariable String email) {
         usuarioService.deletarUsuarioPorEmail(email);
-        return ResponseEntity.noContent().build();   // Melhor que .ok().build()
+        return ResponseEntity.noContent().build();
+    }
+
+    // ====================== ATUALIZAÇÕES ======================
+
+    @PutMapping("/me")
+    public ResponseEntity<UsuarioResponseDTO> atualizarMe(
+            @Valid @RequestBody UsuarioUpdateDTO dto) {
+
+        UsuarioResponseDTO response = usuarioService.updateMe(dto);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/me/senha")
+    public ResponseEntity<Void> atualizarSenha(
+            @Valid @RequestBody SenhaUpdateDTO dto) {
+
+        usuarioService.atualizarSenha(dto);
+        return ResponseEntity.noContent().build(); // 204 No Content
+    }
+
+    @PutMapping("/{usuarioId}/enderecos/{enderecoId}")
+    public ResponseEntity<EnderecoDTO> atualizarEndereco(
+            @PathVariable Long usuarioId,
+            @PathVariable Long enderecoId,
+            @Valid @RequestBody EnderecoUpdateDTO dto) {
+
+        EnderecoDTO response = usuarioService.atualizarEndereco(usuarioId, enderecoId, dto);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{usuarioId}/telefones/{telefoneId}")
+    public ResponseEntity<TelefoneDTO> atualizarTelefone(
+            @PathVariable Long usuarioId,
+            @PathVariable Long telefoneId,
+            @Valid @RequestBody TelefoneUpdateDTO dto) {
+
+        TelefoneDTO response = usuarioService.atualizarTelefone(usuarioId, telefoneId, dto);
+        return ResponseEntity.ok(response);
     }
 }
