@@ -1,4 +1,4 @@
-package infrastructure.business.dto;
+package com.rafael.usuario.infrastructure.business.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
@@ -14,7 +14,4 @@ public class UsuarioUpdateDTO {
 
     @Email(message = "Email inválido")
     private String email;
-
-    @Size(min = 6, message = "Senha deve ter no mínimo 6 caracteres")
-    private String senha;   // opcional - só altera se for enviado
 }
