@@ -1,10 +1,10 @@
-name: Java CI with Gradle
+name: CI - Build and Test
 
 on:
   push:
-    branches: [ "master", "develop" ]
+    branches: [ develop, master ]
   pull_request:
-    branches: [ "master", "develop" ]
+    branches: [ develop, master ]
 
 jobs:
   build:
@@ -24,5 +24,8 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build with Gradle (sem testes)
-        run: ./gradlew clean build -x test --no-daemon
+      - name: Build with Gradle
+        run: ./gradlew clean build --no-daemon
+
+      - name: Run tests
+        run: ./gradlew test --no-daemon
