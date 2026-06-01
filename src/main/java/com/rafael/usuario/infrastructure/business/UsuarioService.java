@@ -2,10 +2,8 @@ package com.rafael.usuario.infrastructure.business;
 
 import com.rafael.usuario.infrastructure.business.converter.UsuarioConverter;
 import com.rafael.usuario.infrastructure.business.dto.EnderecoDTO;
-import com.rafael.usuario.infrastructure.business.dto.EnderecoUpdateDTO;
 import com.rafael.usuario.infrastructure.business.dto.SenhaUpdateDTO;
 import com.rafael.usuario.infrastructure.business.dto.TelefoneDTO;
-import com.rafael.usuario.infrastructure.business.dto.TelefoneUpdateDTO;
 import com.rafael.usuario.infrastructure.business.dto.UsuarioDTO;
 import com.rafael.usuario.infrastructure.business.dto.UsuarioResponseDTO;
 import com.rafael.usuario.infrastructure.business.dto.UsuarioUpdateDTO;
@@ -63,8 +61,6 @@ public class UsuarioService {
         usuarioRepository.delete(usuario);
     }
 
-    // ====================== NOVOS / ATUALIZADOS ======================
-
     @Transactional
     public UsuarioResponseDTO updateMe(UsuarioUpdateDTO dto) {
         String emailAtual = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -72,7 +68,6 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findByEmail(emailAtual)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
-        // Verifica se o email está sendo alterado e se já existe
         if (dto.getEmail() != null && !dto.getEmail().equals(usuario.getEmail())) {
             if (usuarioRepository.existsByEmail(dto.getEmail())) {
                 throw new ConflictException("Já existe um usuário cadastrado com este email: " + dto.getEmail());
@@ -93,46 +88,55 @@ public class UsuarioService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
         if (!passwordEncoder.matches(dto.getSenhaAtual(), usuario.getSenha())) {
-            throw new RuntimeException("Senha atual incorreta"); // TODO: Criar exceção específica depois
+            throw new RuntimeException("Senha atual incorreta");
         }
 
         usuario.setSenha(passwordEncoder.encode(dto.getSenhaNova()));
         usuarioRepository.save(usuario);
     }
 
+    // ====================== NOVOS MÉTODOS: ADIÇÃO DE ENDEREÇO E TELEFONE ======================
+
     @Transactional
-    public EnderecoDTO atualizarEndereco(Long usuarioId, Long enderecoId, EnderecoUpdateDTO dto) {
-        Enderecos endereco = enderecosRepository.findById(enderecoId)
-                .orElseThrow(() -> new ResourceNotFoundException("Endereço não encontrado"));
+    public EnderecoDTO adicionarEndereco(Long usuarioId, EnderecoDTO dto) {
+        // 1. Pega o usuário autenticado pelo token JWT
+        String emailAtual = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        validarPropriedadeDoEndereco(endereco, usuarioId);
+        // 2. Busca o usuário no banco para validar ownership
+        Usuario usuario = usuarioRepository.findByEmail(emailAtual)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
-        // Atualização completa
-        endereco.setRua(dto.getRua());
-        endereco.setNumero(dto.getNumero());
-        endereco.setBairro(dto.getBairro());
-        endereco.setCidade(dto.getCidade());
-        endereco.setEstado(dto.getEstado());
-        endereco.setCep(dto.getCep());
+        // 3. Verifica se o usuarioId da URL pertence realmente ao usuário logado
+        if (!usuario.getId().equals(usuarioId)) {
+            throw new ResourceNotFoundException("Você não tem permissão para adicionar endereço neste usuário");
+        }
 
+        // 4. Converte DTO → Entity
+        Enderecos endereco = usuarioConverter.toEnderecoEntity(dto, usuario);
+
+        // 5. Salva no banco
         Enderecos enderecoSalvo = enderecosRepository.save(endereco);
 
-        return usuarioConverter.toEnderecoDTO(enderecoSalvo);   // ← Muito mais limpo
+        // 6. Retorna o DTO com os dados salvos (incluindo o ID gerado)
+        return usuarioConverter.toEnderecoDTO(enderecoSalvo);
     }
 
     @Transactional
-    public TelefoneDTO atualizarTelefone(Long usuarioId, Long telefoneId, TelefoneUpdateDTO dto) {
-        Telefones telefone = telefonesRepository.findById(telefoneId)
-                .orElseThrow(() -> new ResourceNotFoundException("Telefone não encontrado"));
+    public TelefoneDTO adicionarTelefone(Long usuarioId, TelefoneDTO dto) {
+        String emailAtual = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        validarPropriedadeDoTelefone(telefone, usuarioId);
+        Usuario usuario = usuarioRepository.findByEmail(emailAtual)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
-        telefone.setDdd(dto.getDdd());
-        telefone.setNumero(dto.getNumero());
+        if (!usuario.getId().equals(usuarioId)) {
+            throw new ResourceNotFoundException("Você não tem permissão para adicionar telefone neste usuário");
+        }
+
+        Telefones telefone = usuarioConverter.toTelefoneEntity(dto, usuario);
 
         Telefones telefoneSalvo = telefonesRepository.save(telefone);
 
-        return usuarioConverter.toTelefoneDTO(telefoneSalvo);   // ← Muito mais limpo
+        return usuarioConverter.toTelefoneDTO(telefoneSalvo);
     }
 
     // ====================== MÉTODOS PRIVADOS ======================

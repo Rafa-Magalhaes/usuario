@@ -41,7 +41,7 @@ public class UsuarioConverter {
         return usuario;
     }
 
-    private Enderecos toEnderecoEntity(EnderecoDTO dto, Usuario usuario) {
+    public Enderecos toEnderecoEntity(EnderecoDTO dto, Usuario usuario) {
         Enderecos endereco = new Enderecos();
         endereco.setRua(dto.getRua());
         endereco.setNumero(dto.getNumero());
@@ -49,22 +49,22 @@ public class UsuarioConverter {
         endereco.setBairro(dto.getBairro());
         endereco.setCidade(dto.getCidade());
         endereco.setEstado(dto.getEstado());
-        endereco.setUsuario(usuario);
+        endereco.setUsuario(usuario);           // Vincula o endereço ao usuário
         return endereco;
     }
 
-    private Telefones toTelefoneEntity(TelefoneDTO dto, Usuario usuario) {
+    public Telefones toTelefoneEntity(TelefoneDTO dto, Usuario usuario) {
         Telefones telefone = new Telefones();
         telefone.setDdd(dto.getDdd());
         telefone.setNumero(dto.getNumero());
-        telefone.setUsuario(usuario);
+        telefone.setUsuario(usuario);           // Vincula o telefone ao usuário
         return telefone;
     }
 
     // ====================== Entity → ResponseDTO ======================
     public UsuarioResponseDTO toResponseDTO(Usuario usuario) {
         return new UsuarioResponseDTO(
-                usuario.getId(),                    // ← ID incluído
+                usuario.getId(),
                 usuario.getNome(),
                 usuario.getEmail(),
                 toEnderecoDTOList(usuario.getEnderecos()),
@@ -104,12 +104,8 @@ public class UsuarioConverter {
 
     // ====================== UPDATE METHODS ======================
     public void updateEntityFromDTO(Usuario usuario, UsuarioUpdateDTO dto) {
-        if (dto.getNome() != null) {
-            usuario.setNome(dto.getNome());
-        }
-        if (dto.getEmail() != null) {
-            usuario.setEmail(dto.getEmail());
-        }
+        if (dto.getNome() != null) usuario.setNome(dto.getNome());
+        if (dto.getEmail() != null) usuario.setEmail(dto.getEmail());
     }
 
     public void updateEnderecoFromDTO(Enderecos endereco, EnderecoUpdateDTO dto) {
