@@ -2,10 +2,8 @@ package com.rafael.usuario.infrastructure.controller;
 
 import com.rafael.usuario.infrastructure.business.UsuarioService;
 import com.rafael.usuario.infrastructure.business.dto.EnderecoDTO;
-import com.rafael.usuario.infrastructure.business.dto.EnderecoUpdateDTO;
 import com.rafael.usuario.infrastructure.business.dto.SenhaUpdateDTO;
 import com.rafael.usuario.infrastructure.business.dto.TelefoneDTO;
-import com.rafael.usuario.infrastructure.business.dto.TelefoneUpdateDTO;
 import com.rafael.usuario.infrastructure.business.dto.UsuarioDTO;
 import com.rafael.usuario.infrastructure.business.dto.UsuarioResponseDTO;
 import com.rafael.usuario.infrastructure.business.dto.UsuarioUpdateDTO;
@@ -66,7 +64,6 @@ public class UsuarioController {
     }
 
     // ====================== ATUALIZAÇÕES ======================
-
     @PutMapping("/me")
     public ResponseEntity<UsuarioResponseDTO> atualizarMe(
             @Valid @RequestBody UsuarioUpdateDTO dto) {
@@ -80,26 +77,26 @@ public class UsuarioController {
             @Valid @RequestBody SenhaUpdateDTO dto) {
 
         usuarioService.atualizarSenha(dto);
-        return ResponseEntity.noContent().build(); // 204 No Content
+        return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{usuarioId}/enderecos/{enderecoId}")
-    public ResponseEntity<EnderecoDTO> atualizarEndereco(
-            @PathVariable Long usuarioId,
-            @PathVariable Long enderecoId,
-            @Valid @RequestBody EnderecoUpdateDTO dto) {
+    // ====================== ADIÇÃO DE ENDEREÇOS E TELEFONES ======================
 
-        EnderecoDTO response = usuarioService.atualizarEndereco(usuarioId, enderecoId, dto);
-        return ResponseEntity.ok(response);
+    @PostMapping("/{usuarioId}/enderecos")
+    public ResponseEntity<EnderecoDTO> adicionarEndereco(
+            @PathVariable Long usuarioId,
+            @Valid @RequestBody EnderecoDTO dto) {
+
+        EnderecoDTO response = usuarioService.adicionarEndereco(usuarioId, dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PutMapping("/{usuarioId}/telefones/{telefoneId}")
-    public ResponseEntity<TelefoneDTO> atualizarTelefone(
+    @PostMapping("/{usuarioId}/telefones")
+    public ResponseEntity<TelefoneDTO> adicionarTelefone(
             @PathVariable Long usuarioId,
-            @PathVariable Long telefoneId,
-            @Valid @RequestBody TelefoneUpdateDTO dto) {
+            @Valid @RequestBody TelefoneDTO dto) {
 
-        TelefoneDTO response = usuarioService.atualizarTelefone(usuarioId, telefoneId, dto);
-        return ResponseEntity.ok(response);
+        TelefoneDTO response = usuarioService.adicionarTelefone(usuarioId, dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }
