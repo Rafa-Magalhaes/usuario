@@ -5,7 +5,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
@@ -13,7 +12,7 @@ import java.util.Date;
 public class JwtUtil {
 
     // Chave secreta usada para assinar e verificar tokens JWT
-    private final String secretKey = "sua-chave-secreta-super-segura-que-deve-ser-bem-longa";
+    private final String secretKey = "minhaChaveSuperSecretaParaAssinarOToken1234567890";
 
 
 
@@ -28,12 +27,13 @@ public class JwtUtil {
     }
 
     // Extrai as claims do token JWT (informações adicionais do token)
+    @SuppressWarnings("deprecation")
     public Claims extractClaims(String token) {
         return Jwts.parser()
-                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8))) // Define a chave secreta para validar a assinatura do token
+                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)))
                 .build()
-                .parseClaimsJws(token) // Analisa o token JWT e obtém as claims
-                .getBody(); // Retorna o corpo das claims
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     // Extrai o nome de usuário do token JWT
@@ -54,5 +54,19 @@ public class JwtUtil {
         final String extractedUsername = extractUsername(token);
         // Verifica se o nome de usuário do token corresponde ao fornecido e se o token não está expirado
         return (extractedUsername.equals(username) && !isTokenExpired(token));
+    }
+
+    // ==================== NOVOS MÉTODOS PARA TOKENS DE SERVIÇO ====================
+
+    public String extractTokenType(String token) {
+        return extractClaims(token).get("tokenType", String.class);
+    }
+
+    public boolean isServiceToken(String token) {
+        try {
+            return "SERVICE".equals(extractTokenType(token));
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

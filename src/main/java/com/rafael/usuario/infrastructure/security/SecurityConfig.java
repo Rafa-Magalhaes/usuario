@@ -28,13 +28,18 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // Rotas Públicas
+
+                        // ==================== ROTAS PÚBLICAS ====================
                         .requestMatchers(HttpMethod.POST, "/usuarios", "/usuarios/login").permitAll()
 
-                        // Rotas Protegidas (exigem token JWT)
+                        // ==================== ROTAS INTERNAS (Agendador de Tarefas) ====================
+                        .requestMatchers("/internal/**").authenticated()
+
+                        // ==================== ROTAS PROTEGIDAS ====================
                         .requestMatchers(HttpMethod.GET, "/usuarios").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/usuarios/**").authenticated()
 
+                        // ==================== QUALQUER OUTRA REQUISIÇÃO ====================
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
