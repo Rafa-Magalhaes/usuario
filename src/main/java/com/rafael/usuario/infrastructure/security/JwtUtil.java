@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
+@SuppressWarnings("deprecation")
 @Service
 public class JwtUtil {
 
