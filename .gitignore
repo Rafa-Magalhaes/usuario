@@ -33,7 +33,6 @@ bin/
 .vscode/
 
 # ====================== ARQUIVOS SENSÍVEIS (.env / Senhas) ======================
+# Arquivos sensíveis de desenvolvimento
 .env
-**/.env
-src/test/resources/.env
-src/test/resources/application-local.yml
+application-dev.yml
