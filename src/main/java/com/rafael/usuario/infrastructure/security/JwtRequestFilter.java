@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 
 public class JwtRequestFilter extends OncePerRequestFilter {
 
@@ -30,9 +31,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         String requestURI = request.getRequestURI();
 
-        // ==================== ROTAS PÚBLICAS ====================
-        // Não aplica filtro JWT nessas rotas
-        if (requestURI.equals("/usuarios") && "POST".equals(request.getMethod()) ||
+        // ==================== ROTAS PÚBLICAS (mantido do seu código original) ====================
+        if ((requestURI.equals("/usuarios") && "POST".equals(request.getMethod())) ||
                 requestURI.equals("/usuarios/login")) {
 
             chain.doFilter(request, response);
@@ -44,17 +44,35 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             final String token = authorizationHeader.substring(7);
-            final String username = jwtUtil.extractUsername(token);
 
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            try {
+                final String username = jwtUtil.extractUsername(token);
 
-                if (jwtUtil.validateToken(token, username)) {
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    // ==================== NOVO: Suporte a Token de Serviço ====================
+                    if (jwtUtil.isServiceToken(token)) {
+
+                        // Autentica como token de serviço (sem carregar usuário do banco)
+                        UsernamePasswordAuthenticationToken authentication =
+                                new UsernamePasswordAuthenticationToken("service-account", null, Collections.emptyList());
+
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                    } else {
+                        // ==================== FLUXO ORIGINAL DE USUÁRIO ====================
+                        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+                        if (jwtUtil.validateToken(token, username)) {
+                            UsernamePasswordAuthenticationToken authentication =
+                                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+                            SecurityContextHolder.getContext().setAuthentication(authentication);
+                        }
+                    }
                 }
+            } catch (Exception e) {
+                // Token inválido ou expirado
             }
         }
 

@@ -95,7 +95,7 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
     }
 
-    // ====================== NOVOS MÉTODOS: ADIÇÃO DE ENDEREÇO E TELEFONE ======================
+    // ====================== ADIÇÃO DE ENDEREÇO E TELEFONE ======================
 
     @Transactional
     public EnderecoDTO adicionarEndereco(Long usuarioId, EnderecoDTO dto) {
@@ -151,5 +151,14 @@ public class UsuarioService {
         if (telefone.getUsuario() == null || !telefone.getUsuario().getId().equals(usuarioId)) {
             throw new ResourceNotFoundException("Telefone não pertence ao usuário informado");
         }
+    }
+
+    // ====================== METODO PARA CHAMADAS INTERNAS DE OUTROS SERVIÇOS ======================
+
+    public UsuarioResponseDTO buscarUsuarioPorIdInterno(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o id: " + id));
+
+        return usuarioConverter.toResponseDTO(usuario);
     }
 }

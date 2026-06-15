@@ -99,4 +99,11 @@ public class UsuarioController {
         TelefoneDTO response = usuarioService.adicionarTelefone(usuarioId, dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    // ====================== ENDPOINT PARA REQUISICOES INTERNAS ======================
+    @GetMapping("/internal/{id}")
+    public ResponseEntity<UsuarioResponseDTO> buscarUsuarioInterno(@PathVariable Long id) {
+        UsuarioResponseDTO usuario = usuarioService.buscarUsuarioPorIdInterno(id);
+        return ResponseEntity.ok(usuario);
+    }
 }
