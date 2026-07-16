@@ -1,15 +1,12 @@
-package com.rafael.usuario.infrastructure.business.converter;
+package com.rafael.usuario.infrastructure.mapper;
 
-import com.rafael.usuario.infrastructure.business.dto.EnderecoDTO;
-import com.rafael.usuario.infrastructure.business.dto.EnderecoUpdateDTO;
-import com.rafael.usuario.infrastructure.business.dto.TelefoneDTO;
-import com.rafael.usuario.infrastructure.business.dto.TelefoneUpdateDTO;
-import com.rafael.usuario.infrastructure.business.dto.UsuarioDTO;
-import com.rafael.usuario.infrastructure.business.dto.UsuarioResponseDTO;
-import com.rafael.usuario.infrastructure.business.dto.UsuarioUpdateDTO;
-import com.rafael.usuario.infrastructure.entity.Enderecos;
-import com.rafael.usuario.infrastructure.entity.Telefones;
-import com.rafael.usuario.infrastructure.entity.Usuario;
+import com.rafael.usuario.api.dto.*;
+import com.rafael.usuario.api.DTOaverificar.EnderecoUpdateDTO;
+import com.rafael.usuario.api.DTOaverificar.TelefoneUpdateDTO;
+import com.rafael.usuario.api.DTOaverificar.UsuarioUpdateDTO;
+import com.rafael.usuario.domain.entity.Endereco;
+import com.rafael.usuario.domain.entity.Telefone;
+import com.rafael.usuario.domain.entity.Usuario;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -17,22 +14,22 @@ import java.util.List;
 @Component
 public class UsuarioConverter {
 
-    // ====================== DTO → Entity ======================
-    public Usuario toEntity(UsuarioDTO dto) {
+    // ====================== CADASTRO DE NOVO USUÁRIO ======================
+    public Usuario toEntity(FrontUsuarioCadastroRequestDTO dto) {
         Usuario usuario = new Usuario();
         usuario.setNome(dto.getNome());
         usuario.setEmail(dto.getEmail());
         usuario.setSenha(dto.getSenha());
 
         if (dto.getEnderecos() != null) {
-            List<Enderecos> enderecos = dto.getEnderecos().stream()
+            List<Endereco> enderecos = dto.getEnderecos().stream()
                     .map(enderecoDto -> toEnderecoEntity(enderecoDto, usuario))
                     .toList();
             usuario.setEnderecos(enderecos);
         }
 
         if (dto.getTelefones() != null) {
-            List<Telefones> telefones = dto.getTelefones().stream()
+            List<Telefone> telefones = dto.getTelefones().stream()
                     .map(telefoneDto -> toTelefoneEntity(telefoneDto, usuario))
                     .toList();
             usuario.setTelefones(telefones);
@@ -41,8 +38,8 @@ public class UsuarioConverter {
         return usuario;
     }
 
-    public Enderecos toEnderecoEntity(EnderecoDTO dto, Usuario usuario) {
-        Enderecos endereco = new Enderecos();
+    public Endereco toEnderecoEntity(EnderecoDTO dto, Usuario usuario) {
+        Endereco endereco = new Endereco();
         endereco.setRua(dto.getRua());
         endereco.setNumero(dto.getNumero());
         endereco.setCep(dto.getCep());
@@ -53,17 +50,16 @@ public class UsuarioConverter {
         return endereco;
     }
 
-    public Telefones toTelefoneEntity(TelefoneDTO dto, Usuario usuario) {
-        Telefones telefone = new Telefones();
+    public Telefone toTelefoneEntity(TelefoneDTO dto, Usuario usuario) {
+        Telefone telefone = new Telefone();
         telefone.setDdd(dto.getDdd());
         telefone.setNumero(dto.getNumero());
         telefone.setUsuario(usuario);           // Vincula o telefone ao usuário
         return telefone;
     }
 
-    // ====================== Entity → ResponseDTO ======================
-    public UsuarioResponseDTO toResponseDTO(Usuario usuario) {
-        return new UsuarioResponseDTO(
+    public UsuarioFrontCadastroResponseDTO toResponseDTO(Usuario usuario) {
+        return new UsuarioFrontCadastroResponseDTO(
                 usuario.getId(),
                 usuario.getNome(),
                 usuario.getEmail(),
@@ -72,7 +68,40 @@ public class UsuarioConverter {
         );
     }
 
-    public EnderecoDTO toEnderecoDTO(Enderecos entity) {
+    // ====================== ENRIQUECIMENTO PARA DISPARO DE E-MAIL ======================
+    public UsuarioBffMailResponseDTO toEnriquecimentoDTO(Usuario usuario) {
+        return new UsuarioBffMailResponseDTO(
+                usuario.getNome(),
+                usuario.getEmail()
+        );
+    }
+
+    // ==================== BUSCA PERFIL (ROTA INTERNA) ====================
+    public UsuarioBffPerfilResponseDTO toInternalResponseDTO(Usuario usuario) {
+        return new UsuarioBffPerfilResponseDTO(
+                usuario.getId(),
+                usuario.getNome(),
+                usuario.getEmail(),
+                toEnderecoDTOList(usuario.getEnderecos()),
+                toTelefoneDTOList(usuario.getTelefones())
+        );
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public EnderecoDTO toEnderecoDTO(Endereco entity) {
         EnderecoDTO dto = new EnderecoDTO();
         dto.setId(entity.getId());
         dto.setRua(entity.getRua());
@@ -84,7 +113,7 @@ public class UsuarioConverter {
         return dto;
     }
 
-    public TelefoneDTO toTelefoneDTO(Telefones entity) {
+    public TelefoneDTO toTelefoneDTO(Telefone entity) {
         TelefoneDTO dto = new TelefoneDTO();
         dto.setId(entity.getId());
         dto.setDdd(entity.getDdd());
@@ -92,12 +121,12 @@ public class UsuarioConverter {
         return dto;
     }
 
-    private List<EnderecoDTO> toEnderecoDTOList(List<Enderecos> enderecos) {
+    private List<EnderecoDTO> toEnderecoDTOList(List<Endereco> enderecos) {
         if (enderecos == null) return null;
         return enderecos.stream().map(this::toEnderecoDTO).toList();
     }
 
-    private List<TelefoneDTO> toTelefoneDTOList(List<Telefones> telefones) {
+    private List<TelefoneDTO> toTelefoneDTOList(List<Telefone> telefones) {
         if (telefones == null) return null;
         return telefones.stream().map(this::toTelefoneDTO).toList();
     }
@@ -108,7 +137,7 @@ public class UsuarioConverter {
         if (dto.getEmail() != null) usuario.setEmail(dto.getEmail());
     }
 
-    public void updateEnderecoFromDTO(Enderecos endereco, EnderecoUpdateDTO dto) {
+    public void updateEnderecoFromDTO(Endereco endereco, EnderecoUpdateDTO dto) {
         if (dto.getRua() != null) endereco.setRua(dto.getRua());
         if (dto.getNumero() != null) endereco.setNumero(dto.getNumero());
         if (dto.getBairro() != null) endereco.setBairro(dto.getBairro());
@@ -117,7 +146,7 @@ public class UsuarioConverter {
         if (dto.getCep() != null) endereco.setCep(dto.getCep());
     }
 
-    public void updateTelefoneFromDTO(Telefones telefone, TelefoneUpdateDTO dto) {
+    public void updateTelefoneFromDTO(Telefone telefone, TelefoneUpdateDTO dto) {
         if (dto.getDdd() != null) telefone.setDdd(dto.getDdd());
         if (dto.getNumero() != null) telefone.setNumero(dto.getNumero());
     }

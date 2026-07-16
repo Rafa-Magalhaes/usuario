@@ -1,6 +1,6 @@
 package com.rafael.usuario.infrastructure.security;
 
-import com.rafael.usuario.infrastructure.entity.Usuario;
+import com.rafael.usuario.domain.entity.Usuario;
 import com.rafael.usuario.infrastructure.repository.UsuarioRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

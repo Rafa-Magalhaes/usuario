@@ -1,4 +1,4 @@
-package com.rafael.usuario.infrastructure.business.dto;
+package com.rafael.usuario.api.DTOaverificar;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -1,9 +1,9 @@
 package com.rafael.usuario.infrastructure.repository;
 
-import com.rafael.usuario.infrastructure.entity.Telefones;
+import com.rafael.usuario.domain.entity.Telefone;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface TelefonesRepository extends JpaRepository <Telefones, Long> {
+public interface TelefoneRepository extends JpaRepository <Telefone, Long> {
 }

@@ -1,4 +1,4 @@
-package com.rafael.usuario.infrastructure.business.dto;
+package com.rafael.usuario.api.DTOaverificar;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
