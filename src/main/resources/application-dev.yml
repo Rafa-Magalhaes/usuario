@@ -1,9 +1,0 @@
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/db_usuario
-    username: postgres
-    password: Templar@85
-
-jwt:
-  secret: minhaChaveSuperSecretaParaAssinarOToken1234567890
-  expiration: 3600000
