@@ -1,12 +1,9 @@
-package com.rafael.usuario.infrastructure.controller;
+package com.rafael.usuario.api.controller;
 
-import com.rafael.usuario.infrastructure.business.UsuarioService;
-import com.rafael.usuario.infrastructure.business.dto.EnderecoDTO;
-import com.rafael.usuario.infrastructure.business.dto.SenhaUpdateDTO;
-import com.rafael.usuario.infrastructure.business.dto.TelefoneDTO;
-import com.rafael.usuario.infrastructure.business.dto.UsuarioDTO;
-import com.rafael.usuario.infrastructure.business.dto.UsuarioResponseDTO;
-import com.rafael.usuario.infrastructure.business.dto.UsuarioUpdateDTO;
+import com.rafael.usuario.api.DTOaverificar.SenhaUpdateDTO;
+import com.rafael.usuario.api.DTOaverificar.UsuarioUpdateDTO;
+import com.rafael.usuario.api.dto.*;
+import com.rafael.usuario.domain.service.UsuarioService;
 import com.rafael.usuario.infrastructure.security.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,18 +23,18 @@ public class UsuarioController {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
 
-    // ==================== CADASTRO ====================
+    // ==================== CADASTRAR NOVO USUÁRIO (ROTA EXTERNA)====================
     @PostMapping
-    public ResponseEntity<UsuarioResponseDTO> salvarUsuario(
-            @RequestBody @Valid UsuarioDTO usuarioDTO) {
+    public ResponseEntity<UsuarioFrontCadastroResponseDTO> salvarUsuario(
+            @RequestBody @Valid FrontUsuarioCadastroRequestDTO usuarioDTO) {
 
-        UsuarioResponseDTO response = usuarioService.salvarUsuario(usuarioDTO);
+        UsuarioFrontCadastroResponseDTO response = usuarioService.salvarUsuario(usuarioDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     // ==================== LOGIN ====================
     @PostMapping("/login")
-    public String login(@RequestBody UsuarioDTO usuarioDTO) {
+    public ResponseEntity<TokenResponseDTO> login(@RequestBody BffUsuarioLoginRequestDTO usuarioDTO) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         usuarioDTO.getEmail(),
@@ -45,16 +42,35 @@ public class UsuarioController {
                 )
         );
 
-        return "Bearer " + jwtUtil.generateToken(authentication.getName());
+        String tokenGerado = jwtUtil.generateToken(authentication.getName());
+
+        return ResponseEntity.ok(new TokenResponseDTO("Bearer " + tokenGerado));
     }
 
-    // ==================== BUSCAR ====================
-    @GetMapping
-    public ResponseEntity<UsuarioResponseDTO> buscarUsuarioPorEmail(
-            @RequestParam("email") String email) {
+    // ====================== ENRIQUECER NOTIFICAÇÃO ======================
+    @GetMapping("/internal/{usuarioId}")
+    public ResponseEntity<UsuarioBffMailResponseDTO> buscarUsuarioInterno(@PathVariable Long usuarioId) {
+        UsuarioBffMailResponseDTO usuario = usuarioService.buscarUsuarioPorIdInterno(usuarioId);
+        return ResponseEntity.ok(usuario);
+    }
+
+    // ==================== BUSCAR PERFIL============================
+    @GetMapping("/internal/perfil/{email}")
+    public ResponseEntity<UsuarioBffPerfilResponseDTO> buscarUsuarioPorEmail(
+            @PathVariable("email") String email) {
 
         return ResponseEntity.ok(usuarioService.buscarUsuarioPorEmail(email));
     }
+
+    // ==================== BUSCAR PERFIL, RETORNA SOMENTE ID====================
+    @GetMapping("/internal/id/{email}")
+    public ResponseEntity<Long> buscarIdPorEmail(@PathVariable("email") String email) {
+        return ResponseEntity.ok(usuarioService.buscarIdPorEmail(email));
+    }
+
+
+
+
 
     // ==================== DELETAR ====================
     @DeleteMapping("/{email}")
@@ -65,10 +81,10 @@ public class UsuarioController {
 
     // ====================== ATUALIZAÇÕES ======================
     @PutMapping("/me")
-    public ResponseEntity<UsuarioResponseDTO> atualizarMe(
+    public ResponseEntity<UsuarioFrontCadastroResponseDTO> atualizarMe(
             @Valid @RequestBody UsuarioUpdateDTO dto) {
 
-        UsuarioResponseDTO response = usuarioService.updateMe(dto);
+        UsuarioFrontCadastroResponseDTO response = usuarioService.updateMe(dto);
         return ResponseEntity.ok(response);
     }
 
@@ -98,12 +114,5 @@ public class UsuarioController {
 
         TelefoneDTO response = usuarioService.adicionarTelefone(usuarioId, dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    // ====================== ENDPOINT PARA REQUISICOES INTERNAS ======================
-    @GetMapping("/internal/{id}")
-    public ResponseEntity<UsuarioResponseDTO> buscarUsuarioInterno(@PathVariable Long id) {
-        UsuarioResponseDTO usuario = usuarioService.buscarUsuarioPorIdInterno(id);
-        return ResponseEntity.ok(usuario);
     }
 }

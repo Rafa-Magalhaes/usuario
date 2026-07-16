@@ -1,19 +1,16 @@
-package com.rafael.usuario.infrastructure.business;
+package com.rafael.usuario.domain.service;
 
-import com.rafael.usuario.infrastructure.business.converter.UsuarioConverter;
-import com.rafael.usuario.infrastructure.business.dto.EnderecoDTO;
-import com.rafael.usuario.infrastructure.business.dto.SenhaUpdateDTO;
-import com.rafael.usuario.infrastructure.business.dto.TelefoneDTO;
-import com.rafael.usuario.infrastructure.business.dto.UsuarioDTO;
-import com.rafael.usuario.infrastructure.business.dto.UsuarioResponseDTO;
-import com.rafael.usuario.infrastructure.business.dto.UsuarioUpdateDTO;
-import com.rafael.usuario.infrastructure.entity.Enderecos;
-import com.rafael.usuario.infrastructure.entity.Telefones;
-import com.rafael.usuario.infrastructure.entity.Usuario;
+import com.rafael.usuario.api.DTOaverificar.SenhaUpdateDTO;
+import com.rafael.usuario.api.DTOaverificar.UsuarioUpdateDTO;
+import com.rafael.usuario.api.dto.* ;
+import com.rafael.usuario.domain.entity.Endereco;
+import com.rafael.usuario.domain.entity.Telefone;
+import com.rafael.usuario.domain.entity.Usuario;
 import com.rafael.usuario.infrastructure.exceptions.ConflictException;
 import com.rafael.usuario.infrastructure.exceptions.ResourceNotFoundException;
-import com.rafael.usuario.infrastructure.repository.EnderecosRepository;
-import com.rafael.usuario.infrastructure.repository.TelefonesRepository;
+import com.rafael.usuario.infrastructure.mapper.UsuarioConverter;
+import com.rafael.usuario.infrastructure.repository.EnderecoRepository;
+import com.rafael.usuario.infrastructure.repository.TelefoneRepository;
 import com.rafael.usuario.infrastructure.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,15 +23,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
-    private final EnderecosRepository enderecosRepository;
-    private final TelefonesRepository telefonesRepository;
+    private final EnderecoRepository enderecoRepository;
+    private final TelefoneRepository telefoneRepository;
     private final UsuarioConverter usuarioConverter;
     private final PasswordEncoder passwordEncoder;
 
-    // ====================== MÉTODOS EXISTENTES ======================
-
+    // ==================== CADASTRAR NOVO USUÁRIO (ROTA EXTERNA)====================
     @Transactional
-    public UsuarioResponseDTO salvarUsuario(UsuarioDTO usuarioDTO) {
+    public UsuarioFrontCadastroResponseDTO salvarUsuario(FrontUsuarioCadastroRequestDTO usuarioDTO) {
         if (usuarioRepository.existsByEmail(usuarioDTO.getEmail())) {
             throw new ConflictException("Já existe um usuário cadastrado com o email: " + usuarioDTO.getEmail());
         }
@@ -46,12 +42,31 @@ public class UsuarioService {
         return usuarioConverter.toResponseDTO(usuarioSalvo);
     }
 
-    public UsuarioResponseDTO buscarUsuarioPorEmail(String email) {
+    // ====================== ENRIQUECER NOTIFICAÇÃO ======================
+
+    public UsuarioBffMailResponseDTO buscarUsuarioPorIdInterno(Long UsuarioId) {
+        Usuario usuario = usuarioRepository.findById(UsuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o id: " + UsuarioId));
+
+        return usuarioConverter.toEnriquecimentoDTO(usuario);
+    }
+
+    // ==================== BUSCAR PERFIL, RETORNA CADASTRO============================
+    public UsuarioBffPerfilResponseDTO buscarUsuarioPorEmail(String email) {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o email: " + email));
 
-        return usuarioConverter.toResponseDTO(usuario);
+        return usuarioConverter.toInternalResponseDTO(usuario);
     }
+
+    // ==================== BUSCAR PERFIL, RETORNA SOMENTE ID====================
+    public Long buscarIdPorEmail(String email) {
+        return usuarioRepository.findIdByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o email: " + email));
+    }
+
+
+
 
     @Transactional
     public void deletarUsuarioPorEmail(String email) {
@@ -62,7 +77,7 @@ public class UsuarioService {
     }
 
     @Transactional
-    public UsuarioResponseDTO updateMe(UsuarioUpdateDTO dto) {
+    public UsuarioFrontCadastroResponseDTO updateMe(UsuarioUpdateDTO dto) {
         String emailAtual = SecurityContextHolder.getContext().getAuthentication().getName();
 
         Usuario usuario = usuarioRepository.findByEmail(emailAtual)
@@ -99,25 +114,18 @@ public class UsuarioService {
 
     @Transactional
     public EnderecoDTO adicionarEndereco(Long usuarioId, EnderecoDTO dto) {
-        // 1. Pega o usuário autenticado pelo token JWT
         String emailAtual = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        // 2. Busca o usuário no banco para validar ownership
         Usuario usuario = usuarioRepository.findByEmail(emailAtual)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
-        // 3. Verifica se o usuarioId da URL pertence realmente ao usuário logado
         if (!usuario.getId().equals(usuarioId)) {
             throw new ResourceNotFoundException("Você não tem permissão para adicionar endereço neste usuário");
         }
 
-        // 4. Converte DTO → Entity
-        Enderecos endereco = usuarioConverter.toEnderecoEntity(dto, usuario);
+        Endereco endereco = usuarioConverter.toEnderecoEntity(dto, usuario);
+        Endereco enderecoSalvo = enderecoRepository.save(endereco);
 
-        // 5. Salva no banco
-        Enderecos enderecoSalvo = enderecosRepository.save(endereco);
-
-        // 6. Retorna o DTO com os dados salvos (incluindo o ID gerado)
         return usuarioConverter.toEnderecoDTO(enderecoSalvo);
     }
 
@@ -132,33 +140,24 @@ public class UsuarioService {
             throw new ResourceNotFoundException("Você não tem permissão para adicionar telefone neste usuário");
         }
 
-        Telefones telefone = usuarioConverter.toTelefoneEntity(dto, usuario);
-
-        Telefones telefoneSalvo = telefonesRepository.save(telefone);
+        Telefone telefone = usuarioConverter.toTelefoneEntity(dto, usuario);
+        Telefone telefoneSalvo = telefoneRepository.save(telefone);
 
         return usuarioConverter.toTelefoneDTO(telefoneSalvo);
     }
 
     // ====================== MÉTODOS PRIVADOS ======================
 
-    private void validarPropriedadeDoEndereco(Enderecos endereco, Long usuarioId) {
+    private void validarPropriedadeDoEndereco(Endereco endereco, Long usuarioId) {
         if (endereco.getUsuario() == null || !endereco.getUsuario().getId().equals(usuarioId)) {
             throw new ResourceNotFoundException("Endereço não pertence ao usuário informado");
         }
     }
 
-    private void validarPropriedadeDoTelefone(Telefones telefone, Long usuarioId) {
+    private void validarPropriedadeDoTelefone(Telefone telefone, Long usuarioId) {
         if (telefone.getUsuario() == null || !telefone.getUsuario().getId().equals(usuarioId)) {
             throw new ResourceNotFoundException("Telefone não pertence ao usuário informado");
         }
     }
 
-    // ====================== METODO PARA CHAMADAS INTERNAS DE OUTROS SERVIÇOS ======================
-
-    public UsuarioResponseDTO buscarUsuarioPorIdInterno(Long id) {
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o id: " + id));
-
-        return usuarioConverter.toResponseDTO(usuario);
-    }
 }

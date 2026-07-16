@@ -1,6 +1,5 @@
-package com.rafael.usuario.infrastructure.entity;
+package com.rafael.usuario.domain.entity;
 
-import com.rafael.usuario.infrastructure.entity.Usuario;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.*;
@@ -16,7 +15,7 @@ import lombok.Setter;
 @Entity
 @Table (name = "telefones")
 
-public class Telefones {
+public class Telefone {
 
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)

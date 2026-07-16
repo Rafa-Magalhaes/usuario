@@ -1,6 +1,6 @@
 package com.rafael.usuario.infrastructure.exceptions;
 
-import com.rafael.usuario.infrastructure.business.dto.ErrorResponseDTO;
+import com.rafael.usuario.api.DTOaverificar.ErrorResponseDTO;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;

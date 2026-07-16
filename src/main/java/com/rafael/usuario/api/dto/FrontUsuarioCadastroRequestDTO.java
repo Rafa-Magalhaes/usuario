@@ -1,4 +1,4 @@
-package com.rafael.usuario.infrastructure.business.dto;
+package com.rafael.usuario.api.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UsuarioDTO {
+public class FrontUsuarioCadastroRequestDTO {
 
     private String nome;
     private String email;
