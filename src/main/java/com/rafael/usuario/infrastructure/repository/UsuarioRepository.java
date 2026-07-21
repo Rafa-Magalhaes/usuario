@@ -12,10 +12,16 @@ import java.util.Optional;
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     boolean existsByEmail(String email);
-    Optional<Usuario> findByEmail(String email);           // ← Adicionado
-    void deleteByEmail(String email);
+
+
 
     // ==================== BUSCAR PERFIL, RETORNA SOMENTE ID====================
     @Query("SELECT u.id FROM Usuario u WHERE u.email = :email")
     Optional<Long> findIdByEmail(@Param("email") String email);
+
+    // ==================== DELETAR USUÁRIO ====================
+    void deleteByEmail(String email);
+
+    // ==================== BUSCAR PERFIL ====================
+    Optional<Usuario> findByEmail(String email);
 }

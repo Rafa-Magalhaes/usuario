@@ -1,9 +1,6 @@
 package com.rafael.usuario.infrastructure.mapper;
 
 import com.rafael.usuario.api.dto.*;
-import com.rafael.usuario.api.DTOaverificar.EnderecoUpdateDTO;
-import com.rafael.usuario.api.DTOaverificar.TelefoneUpdateDTO;
-import com.rafael.usuario.api.DTOaverificar.UsuarioUpdateDTO;
 import com.rafael.usuario.domain.entity.Endereco;
 import com.rafael.usuario.domain.entity.Telefone;
 import com.rafael.usuario.domain.entity.Usuario;
@@ -46,7 +43,7 @@ public class UsuarioConverter {
         endereco.setBairro(dto.getBairro());
         endereco.setCidade(dto.getCidade());
         endereco.setEstado(dto.getEstado());
-        endereco.setUsuario(usuario);           // Vincula o endereço ao usuário
+        endereco.setUsuario(usuario);
         return endereco;
     }
 
@@ -54,7 +51,7 @@ public class UsuarioConverter {
         Telefone telefone = new Telefone();
         telefone.setDdd(dto.getDdd());
         telefone.setNumero(dto.getNumero());
-        telefone.setUsuario(usuario);           // Vincula o telefone ao usuário
+        telefone.setUsuario(usuario);
         return telefone;
     }
 
@@ -87,19 +84,15 @@ public class UsuarioConverter {
         );
     }
 
+    private List<EnderecoDTO> toEnderecoDTOList(List<Endereco> enderecos) {
+        if (enderecos == null) return null;
+        return enderecos.stream().map(this::toEnderecoDTO).toList();
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
+    private List<TelefoneDTO> toTelefoneDTOList(List<Telefone> telefones) {
+        if (telefones == null) return null;
+        return telefones.stream().map(this::toTelefoneDTO).toList();
+    }
 
     public EnderecoDTO toEnderecoDTO(Endereco entity) {
         EnderecoDTO dto = new EnderecoDTO();
@@ -121,33 +114,28 @@ public class UsuarioConverter {
         return dto;
     }
 
-    private List<EnderecoDTO> toEnderecoDTOList(List<Endereco> enderecos) {
-        if (enderecos == null) return null;
-        return enderecos.stream().map(this::toEnderecoDTO).toList();
+    // ==================== ADICIONAR ENDERECO ====================
+//  (Usado exclusivamente para a Rota de Adicionar Endereço)
+    public Endereco toEnderecoEntity(BffUsuarioAddenderecoRequestDTO request, Usuario usuario) {
+        Endereco endereco = new Endereco();
+        endereco.setRua(request.getRua());
+        endereco.setNumero(request.getNumero());
+        endereco.setCep(request.getCep());
+        endereco.setBairro(request.getBairro());
+        endereco.setCidade(request.getCidade());
+        endereco.setEstado(request.getEstado());
+        endereco.setUsuario(usuario);
+        return endereco;
     }
 
-    private List<TelefoneDTO> toTelefoneDTOList(List<Telefone> telefones) {
-        if (telefones == null) return null;
-        return telefones.stream().map(this::toTelefoneDTO).toList();
-    }
-
-    // ====================== UPDATE METHODS ======================
-    public void updateEntityFromDTO(Usuario usuario, UsuarioUpdateDTO dto) {
-        if (dto.getNome() != null) usuario.setNome(dto.getNome());
-        if (dto.getEmail() != null) usuario.setEmail(dto.getEmail());
-    }
-
-    public void updateEnderecoFromDTO(Endereco endereco, EnderecoUpdateDTO dto) {
-        if (dto.getRua() != null) endereco.setRua(dto.getRua());
-        if (dto.getNumero() != null) endereco.setNumero(dto.getNumero());
-        if (dto.getBairro() != null) endereco.setBairro(dto.getBairro());
-        if (dto.getCidade() != null) endereco.setCidade(dto.getCidade());
-        if (dto.getEstado() != null) endereco.setEstado(dto.getEstado());
-        if (dto.getCep() != null) endereco.setCep(dto.getCep());
-    }
-
-    public void updateTelefoneFromDTO(Telefone telefone, TelefoneUpdateDTO dto) {
-        if (dto.getDdd() != null) telefone.setDdd(dto.getDdd());
-        if (dto.getNumero() != null) telefone.setNumero(dto.getNumero());
+    // ==================== ADICIONAR TELEFONE ====================
+//  (Usado exclusivamente para a Rota de Adicionar Telefone)
+    public Telefone toTelefoneEntity(BffUsuarioAddtelefoneRequestDTO request, Usuario usuario) {
+        Telefone telefone = new Telefone();
+        telefone.setDdd(request.getDdd());
+        telefone.setNumero(request.getNumero());
+        telefone.setUsuario(usuario);
+        return telefone;
     }
 }
+

@@ -3,17 +3,16 @@ package com.rafael.usuario.domain.entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table (name = "telefones")
+@EqualsAndHashCode(of = "id")
+@ToString(exclude = "usuario")
+@Table(name = "telefones")
 
 public class Telefone {
 

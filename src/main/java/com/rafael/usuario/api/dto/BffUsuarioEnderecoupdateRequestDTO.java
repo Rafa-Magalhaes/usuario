@@ -1,16 +1,17 @@
-package com.rafael.usuario.api.DTOaverificar;
+package com.rafael.usuario.api.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
-public class EnderecoUpdateDTO {
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class BffUsuarioEnderecoupdateRequestDTO {
 
     @NotBlank(message = "Rua é obrigatória")
-    @Size(max = 255, message = "Rua deve ter no máximo 255 caracteres")
+    @Size(max = 100, message = "Rua deve ter no máximo 100 caracteres")
     private String rua;
 
     @NotBlank(message = "Número é obrigatório")

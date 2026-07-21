@@ -1,6 +1,9 @@
-package com.rafael.usuario.infrastructure.exceptions;
+package com.rafael.usuario.api.exceptions;
 
 import com.rafael.usuario.api.DTOaverificar.ErrorResponseDTO;
+import com.rafael.usuario.domain.exceptions.ConflictException;
+import com.rafael.usuario.domain.exceptions.RegraNegocioException;
+import com.rafael.usuario.domain.exceptions.ResourceNotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -90,5 +93,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         );
 
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(RegraNegocioException.class)
+    public ResponseEntity<ErrorResponseDTO> handleRegraNegocioException(
+            RegraNegocioException ex, WebRequest request) {
+
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Erro de validação de negócio",
+                ex.getMessage(),
+                request.getDescription(false)
+        );
+
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 }

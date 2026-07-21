@@ -1,4 +1,4 @@
-package com.rafael.usuario.infrastructure.exceptions;
+package com.rafael.usuario.domain.exceptions;
 
 public class ResourceNotFoundException extends RuntimeException {
 
