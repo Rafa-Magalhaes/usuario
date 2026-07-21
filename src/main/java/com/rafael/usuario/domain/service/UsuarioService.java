@@ -1,13 +1,12 @@
 package com.rafael.usuario.domain.service;
 
-import com.rafael.usuario.api.DTOaverificar.SenhaUpdateDTO;
-import com.rafael.usuario.api.DTOaverificar.UsuarioUpdateDTO;
 import com.rafael.usuario.api.dto.* ;
 import com.rafael.usuario.domain.entity.Endereco;
 import com.rafael.usuario.domain.entity.Telefone;
 import com.rafael.usuario.domain.entity.Usuario;
-import com.rafael.usuario.infrastructure.exceptions.ConflictException;
-import com.rafael.usuario.infrastructure.exceptions.ResourceNotFoundException;
+import com.rafael.usuario.domain.exceptions.ConflictException;
+import com.rafael.usuario.domain.exceptions.RegraNegocioException;
+import com.rafael.usuario.domain.exceptions.ResourceNotFoundException;
 import com.rafael.usuario.infrastructure.mapper.UsuarioConverter;
 import com.rafael.usuario.infrastructure.repository.EnderecoRepository;
 import com.rafael.usuario.infrastructure.repository.TelefoneRepository;
@@ -65,99 +64,137 @@ public class UsuarioService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o email: " + email));
     }
 
-
-
-
+    // ==================== DELETAR USUÁRIO ====================
     @Transactional
-    public void deletarUsuarioPorEmail(String email) {
+    public void deletarUsuario(String email) {
+        usuarioRepository.deleteByEmail(email);
+    }
+
+    // ==================== ATUALIZAR NOME ====================
+    @Transactional
+    public void atualizarNome(String email, String novoNome) {
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o email: " + email));
-
-        usuarioRepository.delete(usuario);
-    }
-
-    @Transactional
-    public UsuarioFrontCadastroResponseDTO updateMe(UsuarioUpdateDTO dto) {
-        String emailAtual = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        Usuario usuario = usuarioRepository.findByEmail(emailAtual)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
-
-        if (dto.getEmail() != null && !dto.getEmail().equals(usuario.getEmail())) {
-            if (usuarioRepository.existsByEmail(dto.getEmail())) {
-                throw new ConflictException("Já existe um usuário cadastrado com este email: " + dto.getEmail());
-            }
-        }
-
-        usuarioConverter.updateEntityFromDTO(usuario, dto);
-
-        Usuario usuarioAtualizado = usuarioRepository.save(usuario);
-        return usuarioConverter.toResponseDTO(usuarioAtualizado);
-    }
-
-    @Transactional
-    public void atualizarSenha(SenhaUpdateDTO dto) {
-        String emailAtual = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        Usuario usuario = usuarioRepository.findByEmail(emailAtual)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
-
-        if (!passwordEncoder.matches(dto.getSenhaAtual(), usuario.getSenha())) {
-            throw new RuntimeException("Senha atual incorreta");
-        }
-
-        usuario.setSenha(passwordEncoder.encode(dto.getSenhaNova()));
+        usuario.setNome(novoNome);
         usuarioRepository.save(usuario);
     }
 
-    // ====================== ADIÇÃO DE ENDEREÇO E TELEFONE ======================
-
+    // ==================== ATUALIZAR SENHA ====================
     @Transactional
-    public EnderecoDTO adicionarEndereco(Long usuarioId, EnderecoDTO dto) {
-        String emailAtual = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        Usuario usuario = usuarioRepository.findByEmail(emailAtual)
+    public void atualizarSenha(BffUsuarioSetpassRequestDTO request, String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
-        if (!usuario.getId().equals(usuarioId)) {
-            throw new ResourceNotFoundException("Você não tem permissão para adicionar endereço neste usuário");
+        if (!passwordEncoder.matches(request.getSenha(), usuario.getSenha())) {
+            throw new RegraNegocioException("Senha atual incorreta");
         }
 
-        Endereco endereco = usuarioConverter.toEnderecoEntity(dto, usuario);
+        usuario.setSenha(passwordEncoder.encode(request.getNovaSenha()));
+        usuarioRepository.save(usuario);
+    }
+
+    // ==================== ATUALIZAR ENDEREÇO ====================
+    @Transactional
+    public void atualizarEndereco(String email, Long enderecoId, BffUsuarioEnderecoupdateRequestDTO request) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+
+        Endereco endereco = enderecoRepository.findById(enderecoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Endereço não encontrado"));
+
+        if (!endereco.getUsuario().getId().equals(usuario.getId())) {
+            throw new RegraNegocioException("Operação negada: Este endereço não pertence ao usuário informado.");
+        }
+
+        endereco.setRua(request.getRua());
+        endereco.setNumero(request.getNumero());
+        endereco.setCep(request.getCep());
+        endereco.setBairro(request.getBairro());
+        endereco.setCidade(request.getCidade());
+        endereco.setEstado(request.getEstado());
+
+        enderecoRepository.save(endereco);
+    }
+
+    // ==================== ATUALIZAR TELEFONE ====================
+    @Transactional
+    public void atualizarTelefone(String email, Long telefoneId, BffUsuarioTelefoneupdateRequestDTO request) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+
+        Telefone telefone = telefoneRepository.findById(telefoneId)
+                .orElseThrow(() -> new ResourceNotFoundException("Telefone não encontrado"));
+
+        if (!telefone.getUsuario().getId().equals(usuario.getId())) {
+            throw new RegraNegocioException("Operação negada: Este telefone não pertence ao usuário informado.");
+        }
+
+        telefone.setDdd(request.getDdd());
+        telefone.setNumero(request.getNumero());
+
+        telefoneRepository.save(telefone);
+    }
+
+    // ==================== DELETAR ENDEREÇO ====================
+    @Transactional
+    public void deletarEnderecoDefinitivo(String email, Long enderecoId) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+
+        Endereco endereco = enderecoRepository.findById(enderecoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Endereço não encontrado"));
+
+        if (!endereco.getUsuario().getId().equals(usuario.getId())) {
+            throw new RegraNegocioException("Operação negada: Este endereço não pertence ao usuário informado.");
+        }
+
+        usuario.getEnderecos().remove(endereco);
+        usuarioRepository.save(usuario);
+    }
+
+    // ==================== DELETAR TELEFONE ====================
+    @Transactional
+    public void deletarTelefoneDefinitivo(String email, Long telefoneId) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+
+        Telefone telefone = telefoneRepository.findById(telefoneId)
+                .orElseThrow(() -> new ResourceNotFoundException("Telefone não encontrado"));
+
+        if (!telefone.getUsuario().getId().equals(usuario.getId())) {
+            throw new RegraNegocioException("Operação negada: Este telefone não pertence ao usuário informado.");
+        }
+
+        usuario.getTelefones().remove(telefone);
+        usuarioRepository.save(usuario);
+    }
+
+    // ==================== ADICIONAR ENDEREÇO ====================
+    @Transactional
+    public EnderecoDTO adicionarEndereco(String email, BffUsuarioAddenderecoRequestDTO request) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+
+        Endereco endereco = usuarioConverter.toEnderecoEntity(request, usuario);
+
+        usuario.getEnderecos().add(endereco);
         Endereco enderecoSalvo = enderecoRepository.save(endereco);
 
         return usuarioConverter.toEnderecoDTO(enderecoSalvo);
     }
 
+    // ==================== ADICIONAR TELEFONE ====================
     @Transactional
-    public TelefoneDTO adicionarTelefone(Long usuarioId, TelefoneDTO dto) {
-        String emailAtual = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        Usuario usuario = usuarioRepository.findByEmail(emailAtual)
+    public TelefoneDTO adicionarTelefone(String email, BffUsuarioAddtelefoneRequestDTO request) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
-        if (!usuario.getId().equals(usuarioId)) {
-            throw new ResourceNotFoundException("Você não tem permissão para adicionar telefone neste usuário");
-        }
+        Telefone telefone = usuarioConverter.toTelefoneEntity(request, usuario);
 
-        Telefone telefone = usuarioConverter.toTelefoneEntity(dto, usuario);
+        usuario.getTelefones().add(telefone);
         Telefone telefoneSalvo = telefoneRepository.save(telefone);
 
         return usuarioConverter.toTelefoneDTO(telefoneSalvo);
-    }
-
-    // ====================== MÉTODOS PRIVADOS ======================
-
-    private void validarPropriedadeDoEndereco(Endereco endereco, Long usuarioId) {
-        if (endereco.getUsuario() == null || !endereco.getUsuario().getId().equals(usuarioId)) {
-            throw new ResourceNotFoundException("Endereço não pertence ao usuário informado");
-        }
-    }
-
-    private void validarPropriedadeDoTelefone(Telefone telefone, Long usuarioId) {
-        if (telefone.getUsuario() == null || !telefone.getUsuario().getId().equals(usuarioId)) {
-            throw new ResourceNotFoundException("Telefone não pertence ao usuário informado");
-        }
     }
 
 }

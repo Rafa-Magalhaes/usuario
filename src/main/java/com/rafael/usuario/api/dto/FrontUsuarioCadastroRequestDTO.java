@@ -1,5 +1,7 @@
 package com.rafael.usuario.api.dto;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +16,9 @@ import java.util.List;
 public class FrontUsuarioCadastroRequestDTO {
 
     private String nome;
+    @Valid
     private String email;
+    @NotBlank
     private String senha;
 
     private List<EnderecoDTO> enderecos;

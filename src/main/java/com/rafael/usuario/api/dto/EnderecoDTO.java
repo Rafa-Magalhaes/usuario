@@ -1,10 +1,11 @@
 package com.rafael.usuario.api.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class EnderecoDTO {
 
     private Long id;
