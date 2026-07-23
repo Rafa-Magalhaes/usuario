@@ -26,6 +26,20 @@ public class UsuarioService {
     private final UsuarioConverter usuarioConverter;
     private final PasswordEncoder passwordEncoder;
 
+    // ==================== BUSCAR PERFIL, RETORNA SOMENTE ID====================
+    public Long buscarIdPorEmail(String email) {
+        return usuarioRepository.findIdByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o email: " + email));
+    }
+
+    // ==================== BUSCAR PERFIL, RETORNA CADASTRO============================
+    public UsuarioBffPerfilResponseDTO buscarUsuarioPorEmail(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o email: " + email));
+
+        return usuarioConverter.toInternalResponseDTO(usuario);
+    }
+
     // ==================== CADASTRAR NOVO USUÁRIO (ROTA EXTERNA)====================
     @Transactional
     public UsuarioFrontCadastroResponseDTO salvarUsuario(FrontUsuarioCadastroRequestDTO usuarioDTO) {
@@ -47,20 +61,6 @@ public class UsuarioService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o id: " + UsuarioId));
 
         return usuarioConverter.toEnriquecimentoDTO(usuario);
-    }
-
-    // ==================== BUSCAR PERFIL, RETORNA CADASTRO============================
-    public UsuarioBffPerfilResponseDTO buscarUsuarioPorEmail(String email) {
-        Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o email: " + email));
-
-        return usuarioConverter.toInternalResponseDTO(usuario);
-    }
-
-    // ==================== BUSCAR PERFIL, RETORNA SOMENTE ID====================
-    public Long buscarIdPorEmail(String email) {
-        return usuarioRepository.findIdByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o email: " + email));
     }
 
     // ==================== DELETAR USUÁRIO ====================

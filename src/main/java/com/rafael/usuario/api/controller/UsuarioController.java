@@ -22,6 +22,20 @@ public class UsuarioController {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
 
+    // ==================== BUSCAR PERFIL, RETORNA SOMENTE ID====================
+    @GetMapping("/internal/id/{email}")
+    public ResponseEntity<Long> buscarIdPorEmail(@PathVariable("email") String email) {
+        return ResponseEntity.ok(usuarioService.buscarIdPorEmail(email));
+    }
+
+    // ==================== BUSCAR PERFIL============================
+    @GetMapping("/internal/perfil/{email}")
+    public ResponseEntity<UsuarioBffPerfilResponseDTO> buscarUsuarioPorEmail(
+            @PathVariable("email") String email) {
+
+        return ResponseEntity.ok(usuarioService.buscarUsuarioPorEmail(email));
+    }
+
     // ==================== CADASTRAR NOVO USUÁRIO (ROTA EXTERNA)====================
     @PostMapping
     public ResponseEntity<UsuarioFrontCadastroResponseDTO> salvarUsuario(
@@ -51,20 +65,6 @@ public class UsuarioController {
     public ResponseEntity<UsuarioBffMailResponseDTO> buscarUsuarioInterno(@PathVariable Long usuarioId) {
         UsuarioBffMailResponseDTO usuario = usuarioService.buscarUsuarioPorIdInterno(usuarioId);
         return ResponseEntity.ok(usuario);
-    }
-
-    // ==================== BUSCAR PERFIL============================
-    @GetMapping("/internal/perfil/{email}")
-    public ResponseEntity<UsuarioBffPerfilResponseDTO> buscarUsuarioPorEmail(
-            @PathVariable("email") String email) {
-
-        return ResponseEntity.ok(usuarioService.buscarUsuarioPorEmail(email));
-    }
-
-    // ==================== BUSCAR PERFIL, RETORNA SOMENTE ID====================
-    @GetMapping("/internal/id/{email}")
-    public ResponseEntity<Long> buscarIdPorEmail(@PathVariable("email") String email) {
-        return ResponseEntity.ok(usuarioService.buscarIdPorEmail(email));
     }
 
     // ==================== DELETAR USUÁRIO ====================
