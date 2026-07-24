@@ -46,17 +46,28 @@ public class JwtUtil {
     }
 
     public boolean validateToken(String token, String username) {
+        // Se for um token de serviço gerado pelo BFF, valida apenas se não expirou e se a assinatura confere
+        if (isServiceToken(token)) {
+            return !isTokenExpired(token);
+        }
         final String extractedUsername = extractUsername(token);
         return (extractedUsername.equals(username) && !isTokenExpired(token));
     }
 
     public String extractTokenType(String token) {
-        return extractClaims(token).get("tokenType", String.class);
+        Claims claims = extractClaims(token);
+        // Compatibilidade com ambas as formas de escrita da claim ("tokentype" e "tokenType")
+        String type = claims.get("tokentype", String.class);
+        if (type == null) {
+            type = claims.get("tokenType", String.class);
+        }
+        return type;
     }
 
     public boolean isServiceToken(String token) {
         try {
-            return "SERVICE".equals(extractTokenType(token));
+            String tokenType = extractTokenType(token);
+            return "SERVICE".equals(tokenType) || "bff-servico".equals(extractUsername(token));
         } catch (Exception e) {
             return false;
         }
