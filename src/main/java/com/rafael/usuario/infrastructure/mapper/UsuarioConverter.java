@@ -67,10 +67,10 @@ public class UsuarioConverter {
 
     // ====================== ENRIQUECIMENTO PARA DISPARO DE E-MAIL ======================
     public UsuarioBffMailResponseDTO toEnriquecimentoDTO(Usuario usuario) {
-        return new UsuarioBffMailResponseDTO(
-                usuario.getNome(),
-                usuario.getEmail()
-        );
+        return UsuarioBffMailResponseDTO.builder()
+                .email(usuario.getEmail())
+                .nome(usuario.getNome())
+                .build();
     }
 
     // ==================== BUSCA PERFIL (ROTA INTERNA) ====================
