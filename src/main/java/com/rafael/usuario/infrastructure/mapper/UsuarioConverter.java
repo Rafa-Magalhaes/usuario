@@ -56,13 +56,13 @@ public class UsuarioConverter {
     }
 
     public UsuarioFrontCadastroResponseDTO toResponseDTO(Usuario usuario) {
-        return new UsuarioFrontCadastroResponseDTO(
-                usuario.getId(),
-                usuario.getNome(),
-                usuario.getEmail(),
-                toEnderecoDTOList(usuario.getEnderecos()),
-                toTelefoneDTOList(usuario.getTelefones())
-        );
+        return UsuarioFrontCadastroResponseDTO.builder()
+                .id(usuario.getId())
+                .nome(usuario.getNome())
+                .email(usuario.getEmail())
+                .enderecos(toEnderecoDTOList(usuario.getEnderecos()))
+                .telefones(toTelefoneDTOList(usuario.getTelefones()))
+                .build();
     }
 
     // ====================== ENRIQUECIMENTO PARA DISPARO DE E-MAIL ======================
@@ -75,13 +75,13 @@ public class UsuarioConverter {
 
     // ==================== BUSCA PERFIL (ROTA INTERNA) ====================
     public UsuarioBffPerfilResponseDTO toInternalResponseDTO(Usuario usuario) {
-        return new UsuarioBffPerfilResponseDTO(
-                usuario.getId(),
-                usuario.getNome(),
-                usuario.getEmail(),
-                toEnderecoDTOList(usuario.getEnderecos()),
-                toTelefoneDTOList(usuario.getTelefones())
-        );
+        return UsuarioBffPerfilResponseDTO.builder()
+                .usuarioId(usuario.getId())
+                .nome(usuario.getNome())
+                .email(usuario.getEmail())
+                .enderecos(toEnderecoDTOList(usuario.getEnderecos()))
+                .telefones(toTelefoneDTOList(usuario.getTelefones()))
+                .build();
     }
 
     private List<EnderecoDTO> toEnderecoDTOList(List<Endereco> enderecos) {
@@ -95,23 +95,23 @@ public class UsuarioConverter {
     }
 
     public EnderecoDTO toEnderecoDTO(Endereco entity) {
-        EnderecoDTO dto = new EnderecoDTO();
-        dto.setId(entity.getId());
-        dto.setRua(entity.getRua());
-        dto.setNumero(entity.getNumero());
-        dto.setCep(entity.getCep());
-        dto.setBairro(entity.getBairro());
-        dto.setCidade(entity.getCidade());
-        dto.setEstado(entity.getEstado());
-        return dto;
+        return EnderecoDTO.builder()
+                .id(entity.getId())
+                .rua(entity.getRua())
+                .numero(entity.getNumero())
+                .cep(entity.getCep())
+                .bairro(entity.getBairro())
+                .cidade(entity.getCidade())
+                .estado(entity.getEstado())
+                .build();
     }
 
     public TelefoneDTO toTelefoneDTO(Telefone entity) {
-        TelefoneDTO dto = new TelefoneDTO();
-        dto.setId(entity.getId());
-        dto.setDdd(entity.getDdd());
-        dto.setNumero(entity.getNumero());
-        return dto;
+        return TelefoneDTO.builder()
+                .id(entity.getId())
+                .ddd(entity.getDdd())
+                .numero(entity.getNumero())
+                .build();
     }
 
     // ==================== ADICIONAR ENDERECO ====================
