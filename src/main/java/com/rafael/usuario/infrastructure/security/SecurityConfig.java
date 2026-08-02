@@ -9,7 +9,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -20,35 +19,26 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtUtil jwtUtil;
-    private final UserDetailsService userDetailsService;
+    private final JwtRequestFilter jwtRequestFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
+        return http
                 .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Rotas públicas
+                        .requestMatchers(HttpMethod.POST, "/usuarios", "/usuarios/internal/login").permitAll()
+                        .requestMatchers("/actuator/**", "/swagger-ui/**", "/v3/api-docs/**", "/error").permitAll()
 
-                        // ==================== ROTAS PÚBLICAS ====================
-                        .requestMatchers(HttpMethod.POST, "/usuarios", "/usuarios/login").permitAll()
+                        // Endpoint interno (usado pelo BFF)
+                        .requestMatchers("/usuarios/internal/**").authenticated()
 
-                        // ==================== ROTAS INTERNAS (Agendador de Tarefas) ====================
-                        .requestMatchers("/internal/**").authenticated()
-
-                        // ==================== ROTAS PROTEGIDAS ====================
-                        .requestMatchers(HttpMethod.GET, "/usuarios").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/usuarios/**").authenticated()
-
-                        // ==================== QUALQUER OUTRA REQUISIÇÃO ====================
+                        // Demais rotas
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .addFilterBefore(new JwtRequestFilter(jwtUtil, userDetailsService),
-                        UsernamePasswordAuthenticationFilter.class);
-
-        return http.build();
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
     }
 
     @Bean

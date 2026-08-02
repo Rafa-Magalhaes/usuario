@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8084
 
 spring:
   application:
@@ -19,5 +19,6 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
 jwt:
-  secret: ${JWT_SECRET:minhaChaveSuperSecretaParaAssinarOToken1234567890}
+  secret: ${APP_JWT_SECRET:chave-super-secreta-minima-32-caracteres-para-HS512-2026}
   expiration: 3600000
+  service-expiration: 1800000

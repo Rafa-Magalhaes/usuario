@@ -34,5 +34,9 @@ bin/
 
 # ====================== ARQUIVOS SENSÍVEIS (.env / Senhas) ======================
 # Arquivos sensíveis de desenvolvimento
-.env
 application-dev.yml
+
+# Arquivos de Variaveis de Ambiente
+.env
+*.env
+.env.*
