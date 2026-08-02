@@ -28,8 +28,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Rotas públicas
-                        .requestMatchers(HttpMethod.POST, "/usuarios", "/usuarios/login").permitAll()
-                        .requestMatchers("/actuator/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/usuarios", "/usuarios/internal/login").permitAll()
+                        .requestMatchers("/actuator/**", "/swagger-ui/**", "/v3/api-docs/**", "/error").permitAll()
 
                         // Endpoint interno (usado pelo BFF)
                         .requestMatchers("/usuarios/internal/**").authenticated()

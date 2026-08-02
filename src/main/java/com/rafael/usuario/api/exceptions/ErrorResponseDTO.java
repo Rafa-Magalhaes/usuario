@@ -1,4 +1,4 @@
-package com.rafael.usuario.api.DTOaverificar;
+package com.rafael.usuario.api.exceptions;
 
 import lombok.Getter;
 import lombok.Setter;

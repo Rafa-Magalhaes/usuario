@@ -33,7 +33,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         // Rotas públicas
         if (path.equals("/usuarios") && "POST".equals(request.getMethod()) ||
-                path.equals("/usuarios/login")) {
+                path.equals("/usuarios/internal/login") && "POST".equals(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;
         }

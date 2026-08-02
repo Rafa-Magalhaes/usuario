@@ -1,5 +1,6 @@
 package com.rafael.usuario.api.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -27,6 +28,9 @@ public class FrontUsuarioCadastroRequestDTO {
     @Size(min = 6, message = "A senha deve ter no mínimo 6 caracteres")
     private String senha;
 
+    @Valid
     private List<EnderecoDTO> enderecos;
+
+    @Valid
     private List<TelefoneDTO> telefones;
 }

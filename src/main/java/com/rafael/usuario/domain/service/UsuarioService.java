@@ -43,11 +43,16 @@ public class UsuarioService {
     // ==================== CADASTRAR NOVO USUÁRIO (ROTA EXTERNA)====================
     @Transactional
     public UsuarioFrontCadastroResponseDTO salvarUsuario(FrontUsuarioCadastroRequestDTO usuarioDTO) {
-        if (usuarioRepository.existsByEmail(usuarioDTO.getEmail())) {
-            throw new ConflictException("Já existe um usuário cadastrado com o email: " + usuarioDTO.getEmail());
+        String emailTratado = usuarioDTO.getEmail() != null ? usuarioDTO.getEmail().trim().toLowerCase() : "";
+
+        if (usuarioRepository.existsByEmail(emailTratado)) {
+            throw new ConflictException("Já existe um usuário cadastrado com o email: " + emailTratado);
         }
 
         Usuario usuario = usuarioConverter.toEntity(usuarioDTO);
+
+        usuario.setEmail(emailTratado);
+
         usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
 
         Usuario usuarioSalvo = usuarioRepository.save(usuario);

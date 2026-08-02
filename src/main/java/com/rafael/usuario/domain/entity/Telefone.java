@@ -3,6 +3,7 @@ package com.rafael.usuario.domain.entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 @Getter
@@ -20,10 +21,12 @@ public class Telefone {
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column (name = "numero", length = 9)
+    @Column (name = "numero", length = 8)
+    @Pattern(regexp = "^\\d+$", message = "Informar somente números")
     private String numero;
 
     @Column (name = "DDD", length = 3)
+    @Pattern(regexp = "^\\d+$", message = "Informar somente números")
     private String ddd;
 
     // Relacionamento com o Usuário (lado "muitos")
