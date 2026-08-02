@@ -67,13 +67,13 @@ public class UsuarioController {
     }
 
     // ==================== LOGIN ====================
-    @PostMapping("/login")
+    @PostMapping("/internal/login")
     @Operation(summary = "Autentica o usuário e emite o JWT", description = "Rota pública de login. Valida credenciais via Spring Security e retorna o token de acesso.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Autenticação bem-sucedida e token retornado"),
             @ApiResponse(responseCode = "401", description = "Credenciais inválidas")
     })
-    public ResponseEntity<TokenResponseDTO> login(@RequestBody BffUsuarioLoginRequestDTO usuarioDTO) {
+    public ResponseEntity<TokenResponseDTO> login(@Valid @RequestBody BffUsuarioLoginRequestDTO usuarioDTO) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         usuarioDTO.getEmail(),

@@ -1,6 +1,5 @@
 package com.rafael.usuario.api.exceptions;
 
-import com.rafael.usuario.api.DTOaverificar.ErrorResponseDTO;
 import com.rafael.usuario.domain.exceptions.ConflictException;
 import com.rafael.usuario.domain.exceptions.RegraNegocioException;
 import com.rafael.usuario.domain.exceptions.ResourceNotFoundException;
